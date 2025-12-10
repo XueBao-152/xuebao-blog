@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 学宝博客</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .global-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-width: 300px;
+            max-width: 500px;
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .form-error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .form-error.show {
+            display: block;
+        }
+        
+        #debugPanel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .debug-btn {
+            margin: 5px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .debug-btn-warning {
+            background: #f0ad4e;
+            color: white;
+        }
+        
+        .debug-btn-info {
+            background: #5bc0de;
+            color: white;
+        }
+        
+        .debug-btn-success {
+            background: #5cb85c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- 返回首页 -->
+        <a href="index.html" class="back-home">
+            <i class="fas fa-arrow-left"></i> 返回首页
+        </a>
+
+        <!-- 注册卡片 -->
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-user-plus"></i> 注册学宝博客</h1>
+                <p>创建您的账户，开始分享知识</p>
+            </div>
+
+            <!-- 消息提示 -->
+            <div id="message" class="alert alert-error" style="display: none;"></div>
+
+            <!-- 注册表单 -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> 用户名
+                    </label>
+                    <input type="text" id="username" class="form-control" 
+                           placeholder="请输入用户名（3-20个字符）" required minlength="3" maxlength="20">
+                    <div class="form-error" id="usernameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope"></i> 邮箱
+                    </label>
+                    <input type="email" id="email" class="form-control" 
+                           placeholder="请输入邮箱地址" required>
+                    <div class="form-error" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> 密码
+                    </label>
+                    <input type="password" id="password" class="form-control" 
+                           placeholder="请输入密码（至少6位）" required minlength="6">
+                    <div class="form-error" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">
+                        <i class="fas fa-lock"></i> 确认密码
+                    </label>
+                    <input type="password" id="confirmPassword" class="form-control" 
+                           placeholder="请再次输入密码" required minlength="6">
+                    <div class="form-error" id="confirmPasswordError"></div>
+                </div>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" id="agreeTerms" class="form-check-input" required>
+                    <label for="agreeTerms" class="form-check-label">
+                        我已阅读并同意
+                        <a href="#" target="_blank">服务条款</a>和
+                        <a href="#" target="_blank">隐私政策</a>
+                    </label>
+                    <div class="form-error" id="termsError"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="registerBtn">
+                    <i class="fas fa-user-plus"></i> 注册
+                </button>
+
+                <div class="auth-divider">
+                    <span>或</span>
+                </div>
+
+                <div class="auth-links">
+                    <p>已有账户？<a href="login.html">立即登录</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 调试面板 -->
+    <div id="debugPanel" style="display: none;">
+        <h4 style="margin: 0 0 10px 0;">调试面板</h4>
+        <button onclick="testRegister()" class="debug-btn debug-btn-warning">测试注册</button>
+        <button onclick="debugAPI()" class="debug-btn debug-btn-info">调试API</button>
+        <button onclick="fillTestData()" class="debug-btn debug-btn-success">填充测试数据</button>
+    </div>
+
+    <!-- 引入JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== 页面加载完成，开始初始化 ===');
+            
+            // 检查API对象
+            console.log('1. 检查API对象:');
+            console.log('- window.API:', window.API);
+            console.log('- typeof window.API:', typeof window.API);
+            console.log('- API.register:', window.API?.register);
+            console.log('- API.register类型:', typeof window.API?.register);
+            
+            // 自动填充测试数据
+            fillTestData();
+            
+            console.log('测试数据已自动填充');
+            
+            // 显示调试面板
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                document.getElementById('debugPanel').style.display = 'block';
+            }
+        });
+        
+        // 填充测试数据
+        function fillTestData() {
+            document.getElementById('username').value = 'user_' + Date.now().toString().slice(-6);
+            document.getElementById('email').value = 'test_' + Date.now().toString().slice(-6) + '@test.com';
+            document.getElementById('password').value = '123456';
+            document.getElementById('confirmPassword').value = '123456';
+            document.getElementById('agreeTerms').checked = true;
+        }
+        
+        // 表单验证
+        function validateForm() {
+            console.log('=== 开始表单验证 ===');
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            
+            console.log('表单数据:', { 
+                username, 
+                email: email.substring(0, 3) + '...', 
+                passwordLength: password.length,
+                confirmPasswordLength: confirmPassword.length,
+                agreeTerms 
+            });
+            
+            let isValid = true;
+            
+            // 验证用户名
+            if (username.length < 3) {
+                showError('usernameError', '用户名至少3个字符');
+                isValid = false;
+            } else {
+                hideError('usernameError');
+            }
+            
+            // 验证邮箱
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('emailError', '请输入有效的邮箱地址');
+                isValid = false;
+            } else {
+                hideError('emailError');
+            }
+            
+            // 验证密码
+            if (password.length < 6) {
+                showError('passwordError', '密码至少6位');
+                isValid = false;
+            } else {
+                hideError('passwordError');
+            }
+            
+            // 验证确认密码
+            if (password !== confirmPassword) {
+                showError('confirmPasswordError', '两次密码不一致');
+                isValid = false;
+            } else {
+                hideError('confirmPasswordError');
+            }
+            
+            // 验证条款
+            if (!agreeTerms) {
+                showError('termsError', '请同意服务条款');
+                isValid = false;
+            } else {
+                hideError('termsError');
+            }
+            
+            console.log('表单验证结果:', isValid);
+            return isValid;
+        }
+        
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.classList.add('show');
+            }
+        }
+        
+        function hideError(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = '';
+                element.classList.remove('show');
+            }
+        }
+        
+        // 表单提交处理
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('=== 表单提交事件触发 ===');
+            
+            if (!validateForm()) {
+                console.log('表单验证失败');
+                return;
+            }
+            
+            const formData = {
+                username: document.getElementById('username').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value
+            };
+            
+            console.log('准备发送注册数据:', { ...formData, password: '***' });
+            
+            try {
+                // 检查API对象
+                console.log('检查API对象:', window.API);
+                console.log('检查API.register:', typeof window.API?.register);
+                
+                if (!window.API || typeof window.API.register !== 'function') {
+                    throw new Error('API.register 不可用，请刷新页面');
+                }
+                
+                // 显示加载状态
+                const submitBtn = document.getElementById('registerBtn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 注册中...';
+                
+                console.log('调用 API.register ...');
+                
+                // ✅ 修复：这里必须用 API.register，注意中间有点号
+                const result = await window.API.register(formData);
+                
+                console.log('API.register响应:', result);
+                
+                // 重置按钮状态
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
+                if (result && result.success !== false) {
+                    console.log('注册成功:', result);
+                    Utils.showMessage('注册成功！正在跳转到登录页...', 'success');
+                    
+                    // 自动跳转到登录页
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    const errorMsg = result?.message || '注册失败';
+                    console.error('注册失败:', errorMsg);
+                    Utils.showMessage(errorMsg, 'error');
+                }
+                
+            } catch (error) {
+                console.error('注册过程出错:', error);
+                
+                // 重置按钮状态
+                const submitBtn = document.getElementById('registerBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> 注册';
+                }
+                
+                // 显示错误信息
+                let errorMessage = '注册失败';
+                if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                    errorMessage = '网络连接失败，请检查后端服务';
+                } else if (error.message.includes('API.register')) {
+                    errorMessage = '系统初始化失败，请刷新页面';
+                } else {
+                    errorMessage = error.message || '注册失败';
+                }
+                
+                Utils.showMessage(errorMessage, 'error');
+            }
+        });
+        
+        // 调试函数
+        window.testRegister = async function() {
+            console.log('=== 测试注册开始 ===');
+            
+            // 填充测试数据
+            fillTestData();
+            
+            console.log('测试数据已填充');
+            console.log('调用API.register...');
+            
+            const testData = {
+                username: document.getElementById('username').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await API.register(testData);
+                console.log('测试注册成功:', response);
+                Utils.showMessage('测试注册成功！', 'success');
+            } catch (error) {
+                console.error('测试注册失败:', error);
+                Utils.showMessage('测试注册失败: ' + error.message, 'error');
+            }
+        };
+        
+        window.debugAPI = function() {
+            console.log('=== API调试信息 ===');
+            console.log('API对象:', window.API);
+            console.log('API.baseURL:', window.API?.baseURL);
+            console.log('API.register类型:', typeof window.API?.register);
+            console.log('API.login类型:', typeof window.API?.login);
+            console.log('API.getPosts类型:', typeof window.API?.getPosts);
+            
+            // 检查API原型链
+            if (window.API) {
+                const proto = Object.getPrototypeOf(window.API);
+                console.log('API原型方法:', Object.getOwnPropertyNames(proto).filter(name => name !== 'constructor'));
+            }
+            
+            // 测试后端连接
+            console.log('测试后端连接...');
+            fetch('http://localhost:8081/api/posts')
+                .then(response => {
+                    console.log('后端连接状态:', response.status, response.statusText);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('后端响应样本:', text.substring(0, 200));
+                })
+                .catch(error => {
+                    console.error('后端连接失败:', error);
+                });
+        };
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+D 显示调试信息
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                debugAPI();
+            }
+            // Ctrl+T 测试注册
+            if (e.ctrlKey && e.key === 't') {
+                e.preventDefault();
+                testRegister();
+            }
+            // Ctrl+F 填充测试数据
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                fillTestData();
+                Utils.showMessage('已填充测试数据', 'info');
+            }
+        });
+        
+        console.log('=== 页面初始化完成 ===');
+        console.log('快捷键: Ctrl+D 调试API, Ctrl+T 测试注册, Ctrl+F 填充测试数据');
+    </script>
+</body>
+</html>

@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 学宝博客</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 全局消息样式 */
+        .global-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            padding: 12px 24px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 300px;
+            max-width: 500px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            animation: fadeInDown 0.3s ease-out;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .message-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #b1dfbb;
+        }
+        
+        .message-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+        
+        .message-warning {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .message-info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border: 1px solid #abdde5;
+        }
+        
+        /* 表单错误样式 */
+        .form-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+            padding: 4px 8px;
+            background: #f8d7da;
+            border-radius: 3px;
+            border-left: 3px solid #dc3545;
+        }
+        
+        .form-error.show {
+            display: block;
+        }
+        
+        /* 加载动画 */
+        #global-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-width: 200px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 调试面板 */
+        #debugPanel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            border: 1px solid #e0e0e0;
+            min-width: 200px;
+        }
+        
+        .debug-btn {
+            margin: 5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .debug-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .debug-btn-warning {
+            background: linear-gradient(135deg, #f0ad4e, #ec971f);
+            color: white;
+        }
+        
+        .debug-btn-info {
+            background: linear-gradient(135deg, #5bc0de, #46b8da);
+            color: white;
+        }
+        
+        .debug-btn-success {
+            background: linear-gradient(135deg, #5cb85c, #4cae4c);
+            color: white;
+        }
+        
+        .debug-btn-danger {
+            background: linear-gradient(135deg, #d9534f, #d43f3a);
+            color: white;
+        }
+        
+        /* 演示账户样式 */
+        .demo-accounts {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .demo-accounts h4 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .account-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .account-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .account-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #007bff;
+        }
+        
+        .account-item span {
+            font-size: 13px;
+            color: #495057;
+        }
+        
+        .account-item .username {
+            font-weight: 600;
+            color: #007bff;
+        }
+        
+        .account-item .password {
+            color: #6c757d;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .global-message {
+                min-width: 90%;
+                margin: 0 5%;
+                left: 0;
+                transform: translateX(0);
+            }
+            
+            #debugPanel {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+            
+            .account-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+    
+    <!-- 修复脚本 - 必须放在这里，在引入api.js之前 -->
+    <script>
+        // 紧急修复API - 在api.js加载之前运行
+        console.log('=== 紧急修复脚本开始 ===');
+        
+        // 确保window.API存在
+        window.API = window.API || {};
+        
+        // 确保API.request存在
+        if (typeof window.API.request !== 'function') {
+            console.log('API.request不存在，创建基础API');
+            
+            window.API.baseURL = window.API.baseURL || 'http://localhost:8081';
+            
+            window.API.request = async function(endpoint, options = {}) {
+                const url = `${this.baseURL}${endpoint}`;
+                const token = localStorage.getItem('xuebao_token');
+                
+                console.log(`API请求: ${options.method || 'GET'} ${url}`);
+                
+                const response = await fetch(url, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                        ...(options.headers || {})
+                    },
+                    body: options.body || null,
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            };
+        }
+        
+        // 确保API.login存在
+        if (typeof window.API.login !== 'function') {
+            console.log('API.login不存在，创建');
+            window.API.login = async function(credentials) {
+                console.log('修复的API.login被调用:', { ...credentials, password: '***' });
+                return this.request('/login', {
+                    method: 'POST',
+                    body: JSON.stringify(credentials)
+                });
+            };
+        }
+        
+        console.log('修复完成，API.login现在是:', typeof window.API.login);
+        console.log('=== 紧急修复脚本结束 ===');
+    </script>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- 返回首页 -->
+        <a href="index.html" class="back-home">
+            <i class="fas fa-arrow-left"></i> 返回首页
+        </a>
+
+        <!-- 登录卡片 -->
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-sign-in-alt"></i> 登录学宝博客</h1>
+                <p>欢迎回来！请登录您的账户</p>
+            </div>
+
+            <!-- 消息提示 -->
+            <div id="message" class="alert alert-error" style="display: none;"></div>
+
+            <!-- 登录表单 -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> 用户名或邮箱
+                    </label>
+                    <input type="text" id="username" class="form-control" 
+                           placeholder="请输入用户名或邮箱" required
+                           autocomplete="username">
+                    <div class="form-error" id="usernameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> 密码
+                    </label>
+                    <input type="password" id="password" class="form-control" 
+                           placeholder="请输入密码" required
+                           autocomplete="current-password">
+                    <div class="form-text">
+                        <a href="#" id="forgotPassword">忘记密码？</a>
+                    </div>
+                    <div class="form-error" id="passwordError"></div>
+                </div>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" id="rememberMe" class="form-check-input">
+                    <label for="rememberMe" class="form-check-label">记住我</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> 登录
+                </button>
+
+                <div class="auth-divider">
+                    <span>或</span>
+                </div>
+
+                <div class="auth-links">
+                    <p>还没有账户？<a href="register.html">立即注册</a></p>
+                </div>
+            </form>
+
+            <!-- 演示账户（开发用） -->
+            <div class="demo-accounts">
+                <h4>演示账户（点击快速登录）</h4>
+                <div class="account-list">
+                    <div class="account-item" onclick="useDemoAccount('xuebao', '123456')">
+                        <span class="username">用户: xuebao</span>
+                        <span class="password">密码: 123456</span>
+                    </div>
+                    <div class="account-item" onclick="useDemoAccount('testuser', 'password123')">
+                        <span class="username">用户: testuser</span>
+                        <span class="password">密码: password123</span>
+                    </div>
+                    <div class="account-item" onclick="useDemoAccount('admin', 'admin123')">
+                        <span class="username">用户: admin</span>
+                        <span class="password">密码: admin123</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 调试面板 -->
+    <div id="debugPanel" style="display: none;">
+        <h4 style="margin: 0 0 10px 0; color: #495057;">调试面板</h4>
+        <button onclick="testLogin()" class="debug-btn debug-btn-warning">测试登录</button>
+        <button onclick="debugAuth()" class="debug-btn debug-btn-info">调试认证</button>
+        <button onclick="fillTestData()" class="debug-btn debug-btn-success">填充测试数据</button>
+        <button onclick="clearStorage()" class="debug-btn debug-btn-danger">清除存储</button>
+        <div style="margin-top: 10px; font-size: 10px; color: #6c757d; text-align: center;">
+            快捷键: Ctrl+D 显示/隐藏
+        </div>
+    </div>
+
+    <!-- 引入JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        // 创建简单的Utils对象（如果utils.js未加载）
+        window.Utils = window.Utils || {
+            showMessage: function(message, type = 'info', duration = 3000) {
+                console.log(`${type.toUpperCase()}: ${message}`);
+                alert(`${type.toUpperCase()}: ${message}`);
+            },
+            showLoading: function(message) {
+                console.log('Loading:', message);
+            },
+            hideLoading: function() {
+                console.log('Loading hidden');
+            }
+        };
+        
+        // 🔥 关键修改：页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== 登录页面初始化开始 ===');
+            
+            // 🔥 第一步：立即检查登录状态
+            console.log('🔍 检查当前登录状态...');
+            const token = localStorage.getItem('xuebao_token');
+            const userStr = localStorage.getItem('xuebao_user');
+            
+            if (token && userStr) {
+                console.log('✅ 检测到用户已登录，自动跳转到首页');
+                
+                try {
+                    const user = JSON.parse(userStr);
+                    const username = user.username || user.email || '用户';
+                    
+                    console.log(`欢迎回来，${username}！正在跳转...`);
+                    
+                    // 显示欢迎消息
+                    Utils.showMessage(`欢迎回来，${username}！正在跳转...`, 'success');
+                    
+                    // 延迟跳转，让用户看到消息
+                    setTimeout(() => {
+                        // 检查是否有重定向参数
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirect = urlParams.get('redirect') || 'index.html';
+                        
+                        console.log(`跳转到: ${redirect}`);
+                        window.location.href = redirect;
+                    }, 1500);
+                    
+                    return; // 阻止后续初始化
+                    
+                } catch (error) {
+                    console.error('解析用户信息失败，清除登录状态:', error);
+                    localStorage.removeItem('xuebao_token');
+                    localStorage.removeItem('xuebao_user');
+                }
+            } else {
+                console.log('👤 用户未登录，继续显示登录表单');
+            }
+            
+            // 🔥 第二步：原有初始化代码（如果未登录）
+            console.log('继续初始化登录页面...');
+            
+            // 立即检查API状态
+            console.log('检查API状态:');
+            console.log('window.API类型:', typeof window.API);
+            console.log('API.login类型:', typeof window.API?.login);
+            console.log('API.getPosts类型:', typeof window.API?.getPosts);
+            
+            // 如果API.login不存在，立即修复
+            if (!window.API || typeof window.API.login !== 'function') {
+                console.error('❌ API.login不存在，立即修复');
+                
+                if (typeof window.API === 'undefined') {
+                    window.API = {};
+                }
+                
+                if (typeof window.API.baseURL === 'undefined') {
+                    window.API.baseURL = 'http://localhost:8081';
+                }
+                
+                if (typeof window.API.request !== 'function') {
+                    window.API.request = async function(endpoint, options = {}) {
+                        const url = `${this.baseURL}${endpoint}`;
+                        const token = localStorage.getItem('xuebao_token');
+                        
+                        console.log(`API.request: ${options.method || 'GET'} ${url}`);
+                        
+                        const response = await fetch(url, {
+                            method: options.method || 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                                ...(options.headers || {})
+                            },
+                            body: options.body || null,
+                            credentials: 'include',
+                            mode: 'cors'
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        return await response.json();
+                    };
+                }
+                
+                window.API.login = async function(credentials) {
+                    console.log('直接调用API.login:', { ...credentials, password: '***' });
+                    return this.request('/login', {
+                        method: 'POST',
+                        body: JSON.stringify(credentials)
+                    });
+                };
+                
+                console.log('✅ API.login修复完成:', typeof window.API.login);
+            } else {
+                console.log('✅ API.login已存在');
+            }
+            
+            // 检查关键组件
+            console.log('组件检查:');
+            console.log('- Utils:', typeof Utils);
+            console.log('- API.login:', typeof API?.login);
+            console.log('- Auth:', typeof Auth);
+            console.log('- Auth.login:', typeof Auth?.login);
+            
+            // 🔥 关键修复：确保Auth对象存在
+            if (typeof window.Auth === 'undefined') {
+                console.warn('Auth未定义，创建基础Auth');
+                window.Auth = {
+                    checkAuth: function() {
+                        const token = localStorage.getItem('xuebao_token');
+                        const user = localStorage.getItem('xuebao_user');
+                        return {
+                            isLoggedIn: !!token,
+                            token: token,
+                            user: user ? JSON.parse(user) : null
+                        };
+                    },
+                    login: async function(credentials) {
+                        console.log('🔥 基础Auth.login被调用:', { ...credentials, password: '***' });
+                        
+                        try {
+                            console.log('调用API.login...');
+                            
+                            if (!window.API || typeof window.API.login !== 'function') {
+                                throw new Error('API.login不可用');
+                            }
+                            
+                            const result = await window.API.login(credentials);
+                            console.log('登录响应:', result);
+                            
+                            if (result && result.token) {
+                                localStorage.setItem('xuebao_token', result.token);
+                                
+                                // 🔥 关键：确保保存用户信息
+                                if (result.user) {
+                                    localStorage.setItem('xuebao_user', JSON.stringify(result.user));
+                                } else if (result.data) {
+                                    localStorage.setItem('xuebao_user', JSON.stringify(result.data));
+                                } else {
+                                    // 如果没有返回用户信息，创建一个基本的用户对象
+                                    const basicUser = {
+                                        username: credentials.username,
+                                        email: credentials.username.includes('@') ? credentials.username : `${credentials.username}@example.com`,
+                                        createdAt: new Date().toISOString()
+                                    };
+                                    localStorage.setItem('xuebao_user', JSON.stringify(basicUser));
+                                }
+                                
+                                Utils.showMessage('登录成功！正在跳转...', 'success');
+                                setTimeout(() => {
+                                    window.location.href = 'index.html';
+                                }, 2000);
+                                return true;
+                            } else {
+                                Utils.showMessage(result?.message || '登录失败', 'error');
+                                return false;
+                            }
+                        } catch (error) {
+                            console.error('登录错误:', error);
+                            Utils.showMessage('登录失败: ' + error.message, 'error');
+                            return false;
+                        }
+                    },
+                    logout: function() {
+                        localStorage.removeItem('xuebao_token');
+                        localStorage.removeItem('xuebao_user');
+                        Utils.showMessage('已退出登录', 'info');
+                        window.location.href = 'login.html';
+                    }
+                };
+                console.log('✅ 基础Auth已创建');
+            }
+            
+            // 检查登录状态
+            const authInfo = window.Auth.checkAuth();
+            console.log('当前登录状态:', authInfo);
+            
+            if (authInfo.isLoggedIn) {
+                console.log('用户已登录，自动跳转...');
+                Utils.showMessage(`欢迎回来，${authInfo.user?.username || '用户'}！正在跳转...`, 'info');
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+                return;
+            }
+            
+            // 填充测试数据
+            fillTestData();
+            
+            // 显示调试面板（开发环境）
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                document.getElementById('debugPanel').style.display = 'block';
+                console.log('调试面板已显示');
+            }
+            
+            // 绑定忘记密码事件
+            const forgotPassword = document.getElementById('forgotPassword');
+            if (forgotPassword) {
+                forgotPassword.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Utils.showMessage('忘记密码功能开发中...', 'info');
+                });
+            }
+            
+            console.log('=== 登录页面初始化完成 ===');
+        });
+        
+        // 表单验证
+        function validateLoginForm() {
+            console.log('=== 开始表单验证 ===');
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            console.log('表单数据:', { 
+                username, 
+                passwordLength: password ? password.length : 0
+            });
+            
+            let isValid = true;
+            
+            // 验证用户名/邮箱
+            if (!username) {
+                showError('usernameError', '请输入用户名或邮箱');
+                isValid = false;
+            } else {
+                hideError('usernameError');
+            }
+            
+            // 验证密码
+            if (!password) {
+                showError('passwordError', '请输入密码');
+                isValid = false;
+            } else if (password.length < 1) {
+                showError('passwordError', '密码不能为空');
+                isValid = false;
+            } else {
+                hideError('passwordError');
+            }
+            
+            console.log('表单验证结果:', isValid);
+            return isValid;
+        }
+        
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.classList.add('show');
+                element.style.animation = 'shake 0.5s';
+                setTimeout(() => element.style.animation = '', 500);
+            }
+        }
+        
+        function hideError(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = '';
+                element.classList.remove('show');
+            }
+        }
+        
+        // 🔥 关键修复：统一登录处理逻辑
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('=== 登录表单提交事件触发 ===');
+            
+            if (!validateLoginForm()) {
+                console.log('表单验证失败，停止提交');
+                return;
+            }
+            
+            const formData = {
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value
+            };
+            
+            console.log('准备发送登录数据:', { ...formData, password: '***' });
+            
+            try {
+                // 显示加载状态
+                const submitBtn = document.getElementById('loginBtn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+                
+                // 🔥 统一使用Auth.login方法
+                console.log('调用 Auth.login...');
+                const success = await Auth.login(formData);
+                
+                if (!success) {
+                    // 如果登录失败，重置按钮状态
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+                // 如果登录成功，Auth.login内部会处理跳转
+                
+            } catch (error) {
+                console.error('登录过程出错:', error);
+                
+                // 重置按钮状态
+                const submitBtn = document.getElementById('loginBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
+                }
+                
+                // 显示错误信息
+                let errorMessage = '登录失败';
+                if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                    errorMessage = '网络连接失败，请检查后端服务';
+                } else if (error.message.includes('API.login')) {
+                    errorMessage = '系统初始化失败，请刷新页面';
+                } else if (error.message.includes('401')) {
+                    errorMessage = '用户名或密码错误';
+                } else {
+                    errorMessage = error.message || '登录失败';
+                }
+                
+                Utils.showMessage(errorMessage, 'error');
+            }
+        });
+        
+        // 使用演示账户
+        function useDemoAccount(username, password) {
+            console.log('使用演示账户:', { username, password: '***' });
+            
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+            document.getElementById('rememberMe').checked = true;
+            
+            // 添加视觉反馈
+            const accountItems = document.querySelectorAll('.account-item');
+            accountItems.forEach(item => {
+                item.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    item.style.transform = 'scale(1)';
+                }, 150);
+            });
+            
+            Utils.showMessage(`已填充账户: ${username}`, 'info');
+            
+            // 自动触发登录
+            setTimeout(() => {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }, 500);
+        }
+        
+        // 填充测试数据
+      // 填充测试数据
+        function fillTestData() {
+            const testAccounts = [
+                { username: 'xuebao', password: '123456' },
+                { username: 'testuser', password: 'password123' },
+                { username: 'admin', password: 'admin123' }
+            ];
+            
+            const randomAccount = testAccounts[Math.floor(Math.random() * testAccounts.length)];
+            document.getElementById('username').value = randomAccount.username;
+            document.getElementById('password').value = randomAccount.password;
+            document.getElementById('rememberMe').checked = true;
+            
+            console.log('填充测试数据:', { username: randomAccount.username, password: '***' });
+        }
+        
+        // 测试登录
+        window.testLogin = async function() {
+            console.log('=== 测试登录开始 ===');
+            console.log('API.login:', typeof API?.login);
+            
+            // 填充测试数据
+            fillTestData();
+            
+            // 等待一下让用户看到填充效果
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 直接调用API.login
+            if (API && typeof API.login === 'function') {
+                console.log('直接调用 API.login() ...');
+                try {
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    
+                    const submitBtn = document.getElementById('loginBtn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+                    
+                    const result = await API.login({ username, password });
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    
+                    console.log('测试登录结果:', result);
+                    
+                    if (result && result.token) {
+                        localStorage.setItem('xuebao_token', result.token);
+                        if (result.user) {
+                            localStorage.setItem('xuebao_user', JSON.stringify(result.user));
+                        }
+                        Utils.showMessage('测试登录成功！', 'success');
+                    } else {
+                        Utils.showMessage('登录失败: ' + (result?.message || '未知错误'), 'error');
+                    }
+                } catch (error) {
+                    console.error('测试登录失败:', error);
+                    Utils.showMessage('测试登录失败: ' + error.message, 'error');
+                    
+                    const submitBtn = document.getElementById('loginBtn');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
+                    }
+                }
+            } else {
+                console.error('API.login 不可用');
+                console.log('API对象:', API);
+                console.log('API对象的所有属性:', Object.getOwnPropertyNames(API || {}));
+                Utils.showMessage('API.login不可用，请检查api.js', 'error');
+            }
+        };
+        
+        // 调试认证
+        window.debugAuth = function() {
+            console.log('=== 认证系统调试信息 ===');
+            console.log('1. 全局对象检查:');
+            console.log('  - window.Utils:', typeof Utils);
+            console.log('  - window.API:', API);
+            console.log('  - API所有属性:', Object.getOwnPropertyNames(API || {}));
+            console.log('  - window.Auth:', Auth);
+            
+            console.log('2. 方法检查:');
+            console.log('  - API.login类型:', typeof API?.login);
+            console.log('  - API.request类型:', typeof API?.request);
+            console.log('  - Auth.login类型:', typeof Auth?.login);
+            console.log('  - Auth.checkAuth类型:', typeof Auth?.checkAuth);
+            
+            console.log('3. 登录状态:');
+            const authInfo = Auth?.checkAuth ? Auth.checkAuth() : { isLoggedIn: false };
+            console.log('  - 是否登录:', authInfo.isLoggedIn);
+            console.log('  - Token存在:', !!authInfo.token);
+            console.log('  - 用户信息:', authInfo.user);
+            
+            console.log('4. 本地存储:');
+            console.log('  - xuebao_token:', localStorage.getItem('xuebao_token'));
+            console.log('  - xuebao_user:', localStorage.getItem('xuebao_user'));
+            
+            console.log('5. 表单元素:');
+            console.log('  - 用户名输入框:', document.getElementById('username'));
+            console.log('  - 密码输入框:', document.getElementById('password'));
+            console.log('  - 登录按钮:', document.getElementById('loginBtn'));
+            console.log('  - 登录表单:', document.getElementById('loginForm'));
+            
+            console.log('6. 测试后端连接...');
+            fetch('http://localhost:8081/api/posts')
+                .then(response => {
+                    console.log('后端连接状态:', response.status, response.statusText);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('后端响应样本:', text.substring(0, 200));
+                })
+                .catch(error => {
+                    console.error('后端连接错误:', error);
+                });
+            
+            Utils.showMessage('调试信息已输出到控制台', 'info');
+        };
+        
+        // 清除存储
+        window.clearStorage = function() {
+            localStorage.removeItem('xuebao_token');
+            localStorage.removeItem('xuebao_user');
+            
+            Utils.showMessage('本地存储已清除', 'success');
+            console.log('本地存储已清除');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        };
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+D 显示/隐藏调试面板
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                const debugPanel = document.getElementById('debugPanel');
+                debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+            }
+            
+            // Ctrl+Enter 提交表单
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+            
+            // F12 调试
+            if (e.key === 'F12') {
+                e.preventDefault();
+                debugAuth();
+            }
+        });
+        
+        // 添加抖动动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        console.log('登录页面JavaScript加载完成');
+        console.log('快捷键: Ctrl+D 显示/隐藏调试面板, Ctrl+Enter 提交表单, F12 调试信息');
+    </script>
+</body>
+</html>

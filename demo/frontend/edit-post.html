@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑文章 - 学宝博客</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-book"></i>
+                学宝博客
+            </a>
+            
+            <div class="nav-links" id="navLinks">
+                <a href="index.html"><i class="fas fa-home"></i> 首页</a>
+                <a href="create-post.html"><i class="fas fa-edit"></i> 写文章</a>
+                <a href="profile.html" id="profileLink"><i class="fas fa-user"></i> 个人中心</a>
+                
+                <div class="auth-buttons" id="authButtons">
+                    <!-- 登录/注册或用户信息 -->
+                </div>
+            </div>
+            
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="editor-page">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1><i class="fas fa-edit"></i> 编辑文章</h1>
+                <p>修改您的文章内容</p>
+            </div>
+            
+            <!-- 编辑表单 -->
+            <form id="editPostForm" class="editor-form">
+                <div class="form-group">
+                    <label for="title" class="form-label">文章标题</label>
+                    <input type="text" id="title" class="form-control" 
+                           placeholder="请输入文章标题" required maxlength="100">
+                    <div class="form-text">标题长度不超过100个字符</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="keywords" class="form-label">关键词</label>
+                    <input type="text" id="keywords" class="form-control" 
+                           placeholder="请输入关键词，用逗号分隔">
+                    <div class="form-text">例如：JavaScript, 前端开发, 教程</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="content" class="form-label">文章内容</label>
+                    <textarea id="content" class="form-control" 
+                              placeholder="请输入文章内容..." rows="15" required></textarea>
+                    <div class="form-text">支持Markdown语法</div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="window.history.back()">取消</button>
+                    <button type="submit" class="btn btn-primary">更新文章</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- 引入JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/post.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查登录状态
+            if (!Auth.protectPage()) return;
+            
+            // 更新导航栏
+            Auth.updateNavbar();
+            
+            // 获取文章ID并加载数据
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+            
+            if (!postId) {
+                Utils.showMessage('文章ID无效', 'error');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // 加载文章数据
+            loadPostData(postId);
+            
+            // 绑定表单提交
+            const form = document.getElementById('editPostForm');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                updatePost(postId);
+            });
+            
+            // 移动端菜单切换
+            function toggleMenu() {
+                const navLinks = document.getElementById('navLinks');
+                navLinks.classList.toggle('active');
+            }
+            window.toggleMenu = toggleMenu;
+        });
+        
+        // 加载文章数据
+        async function loadPostData(postId) {
+            try {
+                const post = await API.getPost(postId);
+                const user = Auth.getCurrentUser();
+                
+                // 检查权限
+                if (!user || post.author.id !== user.id) {
+                    Utils.showMessage('无权编辑此文章', 'error');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // 填充表单
+                document.getElementById('title').value = post.title || '';
+                document.getElementById('content').value = post.content || '';
+                document.getElementById('keywords').value = post.keywords ? post.keywords.join(', ') : '';
+                
+            } catch (error) {
+                Utils.showMessage('加载文章失败', 'error');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // 更新文章
+        async function updatePost(postId) {
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const keywords = document.getElementById('keywords').value.trim();
+            
+            if (!title || !content) {
+                Utils.showMessage('请填写标题和内容', 'error');
+                return;
+            }
+            
+            try {
+                const postData = {
+                    title,
+                    content,
+                    keywords: keywords ? keywords.split(',').map(k => k.trim()) : []
+                };
+                
+                await API.updatePost(postId, postData);
+                Utils.showMessage('文章更新成功！', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = `post.html?id=${postId}`;
+                }, 1000);
+                
+            } catch (error) {
+                // 错误信息已在API中显示
+            }
+        }
+    </script>
+</body>
+</html>

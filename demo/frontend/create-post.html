@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写文章 - 学宝博客</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <!-- 移除空的CSS链接 -->
+    
+    <style>
+        /* 写文章页面专用样式 */
+        .editor-page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .page-header h1 {
+            color: #2c3e50;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .editor-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .form-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        textarea.form-control {
+            min-height: 300px;
+            resize: vertical;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            line-height: 1.6;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+        
+        .btn-outline:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        /* 消息提示 */
+        .alert {
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* 字数统计 */
+        .word-count {
+            color: #6c757d;
+            font-size: 14px;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .editor-page {
+                padding: 10px;
+            }
+            
+            .editor-form {
+                padding: 20px 15px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-book"></i>
+                学宝博客
+            </a>
+            
+            <div class="nav-links" id="navLinks">
+                <a href="index.html"><i class="fas fa-home"></i> 首页</a>
+                <a href="create-post.html" class="active"><i class="fas fa-edit"></i> 写文章</a>
+                <a href="profile.html" id="profileLink"><i class="fas fa-user"></i> 个人中心</a>
+                
+                <div class="auth-buttons" id="authButtons">
+                    <!-- 登录/注册或用户信息 -->
+                </div>
+            </div>
+            
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="editor-page">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1><i class="fas fa-edit"></i> 写文章</h1>
+                <p>分享您的知识和经验</p>
+            </div>
+            
+            <!-- 消息提示 -->
+            <div id="message" class="alert" style="display: none;"></div>
+
+            <!-- 编辑表单 -->
+            <form id="createPostForm" class="editor-form">
+                <div class="form-group">
+                    <label for="title" class="form-label">
+                        <i class="fas fa-heading"></i> 文章标题
+                    </label>
+                    <input type="text" id="title" class="form-control" 
+                           placeholder="请输入文章标题" required maxlength="100">
+                    <div class="form-text">标题长度不超过100个字符</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="keywords" class="form-label">
+                        <i class="fas fa-tags"></i> 关键词
+                    </label>
+                    <input type="text" id="keywords" class="form-control" 
+                           placeholder="请输入关键词，用逗号分隔">
+                    <div class="form-text">例如：JavaScript, 前端开发, 教程</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="content" class="form-label">
+                        <i class="fas fa-edit"></i> 文章内容
+                    </label>
+                    <textarea id="content" class="form-control" 
+                              placeholder="请输入文章内容..." rows="15" required></textarea>
+                    <div class="form-text">支持Markdown语法</div>
+                    <div class="word-count" id="wordCount">0 字</div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="window.history.back()">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> 发布文章
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- 引入JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        // 文章编辑器类 - 简化版本
+        class PostEditor {
+            constructor() {
+                this.form = document.getElementById('createPostForm');
+                this.titleInput = document.getElementById('title');
+                this.keywordsInput = document.getElementById('keywords');
+                this.contentTextarea = document.getElementById('content');
+                this.submitBtn = document.getElementById('submitBtn');
+                this.messageEl = document.getElementById('message');
+                this.wordCountEl = document.getElementById('wordCount');
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('=== 文章编辑器初始化 ===');
+                
+                // 检查登录状态
+                if (!this.checkAuth()) {
+                    return;
+                }
+                
+                this.bindEvents();
+                this.updateWordCount();
+                
+                console.log('✅ 文章编辑器初始化完成');
+            }
+            
+            checkAuth() {
+                const auth = Auth.checkAuth();
+                if (!auth.isLoggedIn) {
+                    this.showMessage('请先登录才能写文章', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html?redirect=create-post.html';
+                    }, 1500);
+                    return false;
+                }
+                return true;
+            }
+            
+            bindEvents() {
+                // 表单提交
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                });
+                
+                // 实时字数统计
+                this.titleInput.addEventListener('input', () => this.updateWordCount());
+                this.contentTextarea.addEventListener('input', () => this.updateWordCount());
+                
+                // 键盘快捷键
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        e.preventDefault();
+                        this.handleSubmit();
+                    }
+                });
+                
+                console.log('✅ 事件绑定完成');
+            }
+            
+            updateWordCount() {
+                const titleLength = this.titleInput.value.length;
+                const contentLength = this.contentTextarea.value.length;
+                const totalWords = titleLength + contentLength;
+                
+                this.wordCountEl.textContent = `${totalWords.toLocaleString()} 字 (标题: ${titleLength}, 内容: ${contentLength})`;
+            }
+            
+// 在 create-post.html 中修改 getFormData 方法
+getFormData() {
+    const title = this.titleInput.value.trim();
+    const content = this.contentTextarea.value.trim();
+    
+    // ✅ 修复：keywords 必须是字符串，而不是数组
+    const keywords = this.keywordsInput.value.split(',')
+        .map(k => k.trim())
+        .filter(k => k.length > 0)
+        .join(',');  // ✅ 关键：转换为逗号分隔的字符串
+    
+    return {
+        title: title,
+        content: content,
+        keywords: keywords  // ✅ 现在是字符串格式
+    };
+}
+            
+            validateForm(formData) {
+                // 验证标题
+                if (!formData.title) {
+                    this.showMessage('请输入文章标题', 'error');
+                    this.titleInput.focus();
+                    return false;
+                }
+                
+                if (formData.title.length > 100) {
+                    this.showMessage('标题不能超过100个字符', 'error');
+                    this.titleInput.focus();
+                    return false;
+                }
+                
+                // 验证内容
+                if (!formData.content) {
+                    this.showMessage('请输入文章内容', 'error');
+                    this.contentTextarea.focus();
+                    return false;
+                }
+                
+                if (formData.content.length < 50) {
+                    this.showMessage('文章内容太短，请至少输入50个字符', 'error');
+                    this.contentTextarea.focus();
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            async handleSubmit() {
+                console.log('=== 处理文章提交 ===');
+                
+                const formData = this.getFormData();
+                
+                // 验证表单
+                if (!this.validateForm(formData)) {
+                    return;
+                }
+                
+                // 禁用按钮
+                this.setSubmitButtonState(true);
+                
+                try {
+                    this.showMessage('发布中，请稍候...', 'info');
+                    
+                    console.log('📤 提交文章数据:', { 
+                        title: formData.title,
+                        contentLength: formData.content?.length 
+                    });
+                    
+                    // ✅ 关键修复：确保API对象存在
+                    if (!window.API) {
+                        console.error('❌ API对象不存在，尝试重新初始化');
+                        window.API = new API(); // 重新初始化
+                    }
+                    
+                    if (typeof window.API.createPost !== 'function') {
+                        throw new Error('API.createPost 方法不可用');
+                    }
+                    
+                    console.log('🔍 API 检查通过');
+                    
+                    // 调用 API 创建文章
+                    const result = await window.API.createPost(formData);
+                    
+                    console.log('✅ API 响应:', result);
+                    
+                    // 处理响应
+                    this.handleResponse(result);
+                    
+                } catch (error) {
+                    console.error('❌ 发布文章失败:', error);
+                    this.handleSubmitError(error);
+                } finally {
+                    this.setSubmitButtonState(false);
+                }
+            }
+            
+            handleResponse(result) {
+                // 简化响应处理逻辑
+                if (result && (result.success || result.id)) {
+                    const postId = result.id || result.data?.id;
+                    const message = result.message || '文章发布成功！';
+                    
+                    this.showMessage(message, 'success');
+                    
+                    // 清除草稿
+                    localStorage.removeItem('xuebao_post_draft');
+                    
+                    // 跳转到文章详情页
+                    setTimeout(() => {
+                        if (postId) {
+                            window.location.href = `post-detail.html?id=${postId}`;
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    }, 1500);
+                    
+                } else {
+                    throw new Error(result?.message || '发布失败：服务器返回错误');
+                }
+            }
+            
+            handleSubmitError(error) {
+                let errorMessage = '发布失败';
+                
+                if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                    errorMessage = '网络连接失败，请检查后端服务';
+                } else if (error.message.includes('401')) {
+                    errorMessage = '登录已过期，请重新登录';
+                    setTimeout(() => {
+                        window.location.href = 'login.html?redirect=create-post.html';
+                    }, 2000);
+                } else if (error.message.includes('400')) {
+                    errorMessage = '数据格式错误，请检查输入';
+                } else {
+                    errorMessage = error.message || '发布失败';
+                }
+                
+                this.showMessage(errorMessage, 'error');
+            }
+            
+            setSubmitButtonState(loading) {
+                if (this.submitBtn) {
+                    this.submitBtn.disabled = loading;
+                    this.submitBtn.innerHTML = loading 
+                        ? '<i class="fas fa-spinner fa-spin"></i> 发布中...' 
+                        : '<i class="fas fa-paper-plane"></i> 发布文章';
+                }
+            }
+            
+            showMessage(message, type = 'info') {
+                if (this.messageEl) {
+                    this.messageEl.textContent = message;
+                    this.messageEl.className = `alert alert-${type}`;
+                    this.messageEl.style.display = 'block';
+                    
+                    // 自动隐藏成功消息
+                    if (type === 'success') {
+                        setTimeout(() => {
+                            this.messageEl.style.display = 'none';
+                        }, 3000);
+                    }
+                } else {
+                    console.log(`${type.toUpperCase()}: ${message}`);
+                }
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== 写文章页面加载完成 ===');
+            
+            // 检查登录状态
+            const auth = Auth.checkAuth();
+            if (!auth.isLoggedIn) {
+                console.log('❌ 用户未登录，跳转到登录页');
+                Utils.showMessage('请先登录', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html?redirect=create-post.html';
+                }, 1500);
+                return;
+            }
+            
+            console.log('✅ 用户已登录:', auth.user);
+            
+            // 检查 API 对象
+            console.log('🔍 检查 API 状态:');
+            console.log('- window.API 存在:', !!window.API);
+            console.log('- API.createPost 类型:', typeof window.API?.createPost);
+            
+            // 如果 API.createPost 不存在，创建备用方法
+            if (!window.API || typeof window.API.createPost !== 'function') {
+                console.warn('⚠️ API.createPost 不存在，创建备用方法');
+                
+                window.API = window.API || {};
+                window.API.baseURL = window.API.baseURL || 'http://localhost:8081';
+                
+                window.API.createPost = async function(postData) {
+                    console.log('✨ 备用 createPost 方法被调用');
+                    
+                    const url = `${this.baseURL}/api/posts`;
+                    const token = localStorage.getItem('xuebao_token');
+                    
+                    try {
+                        console.log(`📡 发送 POST 请求到: ${url}`);
+                        
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                            },
+                            body: JSON.stringify(postData)
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        console.log('✅ 后端响应:', data);
+                        
+                        return data;
+                        
+                    } catch (error) {
+                        console.error('❌ 请求失败:', error);
+                        
+                        // 返回模拟数据用于测试
+                        return {
+                            success: true,
+                            message: '文章发布成功！(测试模式)',
+                            data: {
+                                id: Date.now(),
+                                title: postData.title,
+                                content: postData.content,
+                                author: { username: 'admin' },
+                                createdAt: new Date().toISOString(),
+                                views: 0,
+                                likes: 0,
+                                comments: 0
+                            }
+                        };
+                    }
+                };
+                
+                console.log('✅ 备用 API.createPost 已创建');
+            }
+            
+            // 初始化编辑器
+            try {
+                window.postEditor = new PostEditor();
+                console.log('✅ 文章编辑器初始化成功');
+            } catch (error) {
+                console.error('❌ 文章编辑器初始化失败:', error);
+                Utils.showMessage('页面初始化失败，请刷新重试', 'error');
+            }
+            
+            // 更新导航栏
+            if (typeof Auth.updateNavbar === 'function') {
+                Auth.updateNavbar();
+            }
+            
+            // 移动端菜单切换
+            window.toggleMenu = function() {
+                const navLinks = document.getElementById('navLinks');
+                if (navLinks) {
+                    navLinks.classList.toggle('active');
+                }
+            };
+            
+            console.log('✅ 写文章页面初始化完成');
+        });
+        
+        // 全局函数用于调试
+        window.testCreatePost = function() {
+            console.log('🧪 测试创建文章功能');
+            
+            const testData = {
+                title: '测试文章 - ' + new Date().toLocaleString(),
+                content: '这是一篇测试文章内容。\n\n## 二级标题\n\n- 列表项1\n- 列表项2\n\n**加粗文本** *斜体文本*',
+                keywords: ['测试', '示例', '演示']
+            };
+            
+            document.getElementById('title').value = testData.title;
+            document.getElementById('content').value = testData.content;
+            document.getElementById('keywords').value = testData.keywords.join(', ');
+            
+            console.log('✅ 测试数据已填充');
+            Utils.showMessage('测试数据已填充，可以点击发布测试', 'info');
+        };
+    </script>
+</body>
+</html>

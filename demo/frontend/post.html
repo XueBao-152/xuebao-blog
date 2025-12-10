@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章详情 - 学宝博客</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 🎯 修复脚本1 - 放在head顶部 -->
+    <script>
+        // 🔧 预加载修复：确保API.getPost存在
+        (function() {
+            console.log('🔧 预加载API.getPost修复...');
+            
+            // 如果API不存在，创建它
+            if (!window.API) {
+                window.API = {};
+                console.log('✅ 预加载：创建API对象');
+            }
+            
+            // 确保getPost方法存在
+            if (typeof window.API.getPost !== 'function') {
+                console.log('⚠️ 预加载：API.getPost不存在，添加修复...');
+                
+                window.API.getPost = async function(id) {
+                    console.log(`📄 预加载API.getPost: id=${id}`);
+                    
+                    try {
+                        const token = localStorage.getItem('xuebao_token');
+                        const response = await fetch(`http://localhost:8081/api/posts/${id}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                            },
+                            credentials: 'include',
+                            mode: 'cors'
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        console.log('✅ 预加载API.getPost成功');
+                        return data;
+                        
+                    } catch (error) {
+                        console.error('❌ 预加载API.getPost失败:', error);
+                        throw error;
+                    }
+                };
+                
+                console.log('✅ 预加载API.getPost修复完成');
+            }
+        })();
+    </script>
+    
+    <style>
+        /* 您的CSS样式保持不变 */
+        .post-page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+        
+        .post-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #dc3545;
+        }
+        
+        .error-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+        
+        .post-detail {
+            padding: 40px;
+        }
+        
+        .post-header {
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .post-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1.3;
+            margin-bottom: 20px;
+        }
+        
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .author-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        .post-time {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .post-stats {
+            display: flex;
+            gap: 20px;
+            color: #6c757d;
+        }
+        
+        .post-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .post-tags {
+            margin: 20px 0;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+        
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-footer {
+            border-top: 1px solid #e9ecef;
+            padding-top: 30px;
+        }
+        
+        .post-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .comments-section {
+            margin-top: 50px;
+        }
+        
+        .comments-section h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .comment-form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .comment-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .comments-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .comment-item {
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .comment-time {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .comment-content {
+            line-height: 1.6;
+            color: #495057;
+        }
+        
+        .no-comments {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* ===== 新增评论样式 ===== */
+        .comment-author-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .comment-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .comment-footer {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .comment-footer .btn-text {
+            color: #6c757d;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .comment-footer .btn-text:hover {
+            background: #f8f9fa;
+            color: #495057;
+        }
+        
+        .reply-form {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .reply-form.active {
+            display: block;
+        }
+        
+        .reply-form textarea {
+            width: 100%;
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .reply-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .empty-comments {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-comments i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .login-prompt a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-prompt a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .post-page {
+                padding: 10px;
+            }
+            
+            .post-detail {
+                padding: 20px;
+            }
+            
+            .post-title {
+                font-size: 2rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .post-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .post-actions {
+                flex-direction: column;
+            }
+            
+            .post-actions .btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .comment-form-card {
+                padding: 20px;
+            }
+            
+            .comment-item {
+                padding: 15px 20px;
+            }
+            
+            .comment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .comment-actions {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-book"></i>
+                学宝博客
+            </a>
+            
+            <div class="nav-links" id="navLinks">
+                <a href="index.html"><i class="fas fa-home"></i> 首页</a>
+                <a href="create-post.html" id="createPostLink"><i class="fas fa-edit"></i> 写文章</a>
+                <a href="profile.html" id="profileLink"><i class="fas fa-user"></i> 个人中心</a>
+                
+                <div class="auth-buttons" id="authButtons">
+                    <!-- 登录/注册或用户信息 -->
+                </div>
+            </div>
+            
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="post-page">
+            <!-- 返回按钮 -->
+            <a href="index.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> 返回首页
+            </a>
+            
+            <!-- 文章内容容器 -->
+            <div id="postContainer" class="post-container">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>正在加载文章...</p>
+                </div>
+            </div>
+            
+            <!-- 评论区域 -->
+            <section class="comments-section">
+                <h2><i class="fas fa-comments"></i> 评论</h2>
+                
+                <!-- 评论表单 -->
+                <div class="comment-form-card" id="commentFormCard">
+                    <form id="commentForm" class="comment-form">
+                        <div class="form-group">
+                            <textarea id="commentContent" class="form-control" 
+                                      placeholder="写下您的评论..." rows="4" required></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">发表评论</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 评论列表 -->
+                <div id="commentsContainer" class="comments-list">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>正在加载评论...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main><!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>学宝博客</h4>
+                    <p>分享知识，共同成长的技术社区</p>
+                </div>
+                <div class="footer-section">
+                    <h4>链接</h4>
+                    <a href="index.html">首页</a>
+                    <a href="about.html">关于我们</a>
+                    <a href="contact.html">联系我们</a>
+                </div>
+                <div class="footer-section">
+                    <h4>关注我们</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-weibo"></i></a>
+                        <a href="#"><i class="fab fa-weixin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <p class="copyright">© 2023 学宝博客. 保留所有权利.</p>
+        </div>
+    </footer>
+
+    <!-- 🔧 修复后的JavaScript引入顺序 -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/comment.js"></script>
+    <script src="js/post.js"></script>
+    <script src="js/main.js"></script>
+    
+    <!-- 🎯 修复后的评论系统初始化脚本 -->
+    <script>
+        // 🔥 修复版评论系统初始化
+        (function initCommentSystem() {
+            console.log('🎯 初始化评论系统...');
+            
+            // 等待页面完全加载
+            window.addEventListener('load', function() {
+                console.log('=== 页面加载完成，初始化评论系统 ===');
+                
+                // 获取文章ID
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('id');
+                
+                if (!postId) {
+                    console.error('❌ 没有文章ID，无法加载评论');
+                    return;
+                }
+                
+                console.log('📄 当前文章ID:', postId);
+                
+                // 检查组件状态
+                console.log('🔍 检查组件状态:');
+                console.log('- CommentManager:', window.CommentManager ? '✅ 存在' : '❌ 不存在');
+                console.log('- CommentManager.loadComments:', typeof window.CommentManager?.loadComments);
+                console.log('- CommentManager.submitComment:', typeof window.CommentManager?.submitComment);
+                console.log('- API.getPostComments:', typeof window.API?.getPostComments);
+                
+                // 🔧 修复1：确保API.getPostComments正确处理响应格式
+                if (window.API && window.API.getPostComments) {
+                    const originalGetPostComments = window.API.getPostComments;
+                    window.API.getPostComments = async function(postId) {
+                        try {
+                            const response = await originalGetPostComments.call(this, postId);
+                            console.log('📦 API.getPostComments响应:', response);
+                            
+                            // 🔥 确保返回标准格式
+                            if (response && response.success !== undefined) {
+                                return response;
+                            } else if (Array.isArray(response)) {
+                                return { success: true, data: response };
+                            } else if (response && response.data !== undefined) {
+                                return { success: true, data: response.data, message: response.message };
+                            } else {
+                                return { success: true, data: [] };
+                            }
+                        } catch (error) {
+                            console.error('❌ API.getPostComments失败:', error);
+                            throw error;
+                        }
+                    };
+                    console.log('✅ 已修复API.getPostComments数据格式处理');
+                }
+                
+                // 🔧 修复2：绑定评论表单
+                const commentForm = document.getElementById('commentForm');
+                if (commentForm) {
+                    console.log('✅ 找到评论表单，绑定事件');
+                    commentForm.onsubmit = function(e) {
+                        e.preventDefault();
+                        console.log('📝 评论表单提交');
+                        
+                        if (window.CommentManager && window.CommentManager.submitComment) {
+                            window.CommentManager.submitComment(e, postId);
+                        } else {
+                            console.error('❌ CommentManager.submitComment不可用');
+                            alert('评论功能暂不可用');
+                        }
+                    };
+                } else {
+                    console.error('❌ 找不到评论表单');
+                }
+                
+                // 🔧 修复3：检查登录状态，更新评论表单显示
+                const auth = window.Auth ? window.Auth.checkAuth() : { isLoggedIn: false };
+                const commentFormCard = document.getElementById('commentFormCard');
+                if (commentFormCard) {
+                    if (auth.isLoggedIn) {
+                        console.log('👤 用户已登录，显示评论表单');
+                        commentFormCard.style.display = 'block';
+                    } else {
+                        console.log('👤 用户未登录，显示登录提示');
+                        commentFormCard.innerHTML = `
+                            <div class="login-prompt">
+                                <p>请 <a href="login.html?redirect=${encodeURIComponent(window.location.href)}">登录</a> 后发表评论</p>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // 🔧 修复4：加载评论
+                console.log('🚀 开始加载评论...');
+                if (window.CommentManager && typeof window.CommentManager.loadComments === 'function') {
+                    setTimeout(() => {
+                        window.CommentManager.loadComments(postId);
+                    }, 500);
+                } else {
+                    console.error('❌ CommentManager.loadComments不可用');
+                    const container = document.getElementById('commentsContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="error-state">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h3>评论系统加载失败</h3>
+                                <p>请刷新页面重试</p>
+                            </div>
+                        `;
+                    }
+                }
+                
+                console.log('✅ 评论系统初始化完成');
+            });
+        })();
+    </script>
+    
+    <!-- 🔥 最终修复：确保文章正确加载 -->
+    <script>
+        (function finalFix() {
+            console.log('🎯 启动最终修复脚本...');
+            
+            // 等待页面完全加载
+            window.addEventListener('load', function() {
+                console.log('=== 页面加载完成，最终修复 ===');
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('id');
+                
+                if (!postId) {
+                    console.error('❌ 没有文章ID');
+                    return;
+                }
+                
+                console.log('📄 当前文章ID:', postId);
+                
+                // 🔧 修复1：确保PostManager存在
+                if (!window.PostManager) {
+                    console.warn('⚠️ PostManager不存在，创建应急版本');
+                    window.PostManager = {};
+                }
+                
+                // 🔧 修复2：确保loadPost方法存在
+                if (typeof window.PostManager.loadPost !== 'function') {
+                    console.warn('⚠️ PostManager.loadPost不存在，创建应急方法');
+                    
+                    window.PostManager.loadPost = async function(postId) {
+                        console.log('🚀 应急PostManager.loadPost:', postId);
+                        
+                        const container = document.getElementById('postContainer');
+                        if (!container) {
+                            console.error('❌ 找不到文章容器');
+                            return;
+                        }
+                        
+                        try {
+                            container.innerHTML = '<div class="loading">正在加载文章...</div>';
+                            
+                            // 确保API存在
+                            if (!window.API || !window.API.getPost) {
+                                throw new Error('API.getPost不可用');
+                            }
+                            
+                            // 调用API
+                            console.log('📡 调用API.getPost...');
+                            const response = await window.API.getPost(postId);
+                            console.log('✅ API响应成功:', response);
+                            
+                            // 提取文章数据
+                            const post = response.data || response;
+                            
+                            if (!post) {
+                                throw new Error('文章数据为空');
+                            }
+                            
+                            // 渲染文章
+                            this.renderPost(container, post);
+                            
+                            console.log('✅ 文章加载完成');
+                            
+                        } catch (error) {
+                            console.error('❌ 加载文章失败:', error);
+                            this.showError('文章加载失败: ' + error.message);
+                        }
+                    };
+                    
+                    // 添加辅助方法
+                    window.PostManager.renderPost = function(container, post) {
+                        const author = this.getAuthorName(post.author);
+                        const dateStr = this.formatDate(post.createdAt);
+                        
+                        container.innerHTML = `
+                            <div class="post-detail">
+                                <div class="post-header">
+                                    <h1 class="post-title">${this.escapeHtml(post.title || '无标题')}</h1>
+                                    <div class="post-meta">
+                                        <div class="author-info">
+                                            <div class="author-avatar">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
+                                            <div>
+                                                <div class="author-name">${this.escapeHtml(author)}</div>
+                                                <div class="post-time">${dateStr}</div>
+                                            </div>
+                                        </div>
+                                        <div class="post-stats">
+                                            <span><i class="far fa-eye"></i> ${post.viewCount || 0} 阅读</span>
+                                            <span><i class="far fa-heart"></i> ${post.likeCount || 0} 点赞</span>
+                                            <span><i class="far fa-comment"></i> ${post.commentCount || 0} 评论</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${post.keywords ? `
+                                    <div class="post-tags">
+                                        ${(typeof post.keywords === 'string' ? post.keywords.split(',') : post.keywords)
+                                            .map(k => `<span class="tag">${this.escapeHtml(k.trim())}</span>`)
+                                            .join('')}
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="post-content">
+                                    ${(post.content || '').replace(/\n/g, '<br>')}
+                                </div>
+                                
+                                <div class="post-footer">
+                                    <div class="post-actions">
+                                        <button class="btn btn-outline" onclick="alert('点赞功能开发中')">
+                                            <i class="far fa-heart"></i> 点赞
+                                        </button>
+                                        <button class="btn btn-outline" onclick="document.getElementById('commentForm').scrollIntoView()">
+                                            <i class="far fa-comment"></i> 评论
+                                        </button>
+                                        <a href="index.html" class="btn btn-outline">返回首页</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    };
+                    
+                    window.PostManager.getAuthorName = function(author) {
+                        if (!author) return '匿名';
+                        if (typeof author === 'string') return author;
+                        if (author.username) return author.username;
+                        if (author.nickname) return author.nickname;
+                        if (author.name) return author.name;
+                        return '匿名';
+                    };
+                    
+                    window.PostManager.formatDate = function(dateString) {
+                        if (!dateString) return '未知时间';
+                        try {
+                            const date = new Date(dateString);
+                            return date.toLocaleDateString('zh-CN') + ' ' + 
+                                   date.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'});
+                        } catch (e) {
+                            return dateString;
+                        }
+                    };
+                    
+                    window.PostManager.escapeHtml = function(text) {
+                        if (!text) return '';
+                        return String(text)
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;")
+                            .replace(/'/g, "&#039;");
+                    };
+                    
+                    window.PostManager.showError = function(message) {
+                        const container = document.getElementById('postContainer');
+                        if (!container) return;
+                        
+                        container.innerHTML = `
+                            <div class="error-state">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h3>页面加载失败</h3>
+                                <p>${message}</p>
+                                <button onclick="location.reload()" class="btn btn-primary">刷新页面</button>
+                            </div>
+                        `;
+                    };
+                    
+                    console.log('✅ 应急PostManager创建完成');
+                }
+                
+                // 🔧 修复3：确保CommentManager.loadComments存在
+                if (window.CommentManager && typeof window.CommentManager.loadComments !== 'function') {
+                    console.warn('⚠️ CommentManager.loadComments不存在，创建应急方法');
+                    
+                    window.CommentManager.loadComments = async function(postId) {
+                        console.log('🔧 应急CommentManager.loadComments:', postId);
+                        
+                        const container = document.getElementById('commentsContainer');
+                        if (!container) {
+                            console.error('❌ 找不到评论容器');
+                            return;
+                        }
+                        
+                        try {
+                            container.innerHTML = '<div class="loading">正在加载评论...</div>';
+                            
+                            if (!window.API || !window.API.getPostComments) {
+                                throw new Error('API.getPostComments不可用');
+                            }
+                            
+                            const response = await window.API.getPostComments(postId);
+                            console.log('📦 评论数据:', response);
+                            
+                            if (container) {
+                                if (response.data && response.data.length > 0) {
+                                    container.innerHTML = response.data.map(comment => {
+                                        const commentData = comment.data || comment;
+                                        const author = commentData.author?.username || commentData.author || '匿名用户';
+                                        const content = commentData.content || '';
+                                        const createdAt = commentData.createdAt || new Date().toISOString();
+                                        
+                                        return `
+                                            <div class="comment-item">
+                                                <div class="comment-header">
+                                                    <div class="comment-author-info">
+                                                        <div class="comment-avatar">
+                                                            <i class="fas fa-user-circle"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="comment-author">${author}</div>
+                                                            <div class="comment-time">${new Date(createdAt).toLocaleString()}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="comment-content">${content.replace(/\n/g, '<br>')}</div>
+                                            </div>
+                                        `;
+                                    }).join('');
+                                } else {
+                                    container.innerHTML = '<div class="no-comments">暂无评论</div>';
+                                }
+                            }
+                        } catch (error) {
+                            console.error('❌ 加载评论失败:', error);
+                            if (container) {
+                                container.innerHTML = '<div class="error-state">加载评论失败</div>';
+                            }
+                        }
+                    };
+                }
+                
+                // 🔧 修复4：更新导航栏
+                if (window.Auth && typeof window.Auth.updateNavbar === 'function') {
+                    window.Auth.updateNavbar();
+                }
+                
+                // 🔧 修复5：最终验证并加载文章
+                console.log('🔍 最终验证:');
+                console.log('API.getPost:', typeof window.API?.getPost);
+                console.log('PostManager.loadPost:', typeof window.PostManager?.loadPost);
+                console.log('CommentManager.loadComments:', typeof window.CommentManager?.loadComments);
+                
+                if (typeof window.PostManager.loadPost === 'function') {
+                    console.log('🚀 开始加载文章...');
+                    window.PostManager.loadPost(postId);
+                } else {
+                    console.error('❌ 最终修复失败：PostManager.loadPost仍然不可用');
+                    showError('页面组件加载失败，请刷新页面');
+                }
+                
+                console.log('✅ 最终修复完成');
+            });
+            
+            // 工具函数
+            function showError(message) {
+                const container = document.getElementById('postContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="error-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>页面加载失败</h3>
+                            <p>${message}</p>
+                            <button onclick="location.reload()" class="btn btn-primary">刷新页面</button>
+                        </div>
+                    `;
+                }
+            }
+            
+            // 移动端菜单
+            window.toggleMenu = function() {
+                const navLinks = document.getElementById('navLinks');
+                if (navLinks) {
+                    navLinks.classList.toggle('active');
+                }
+            };
+        })();
+    </script>
+    <script>
+    // 🔧 确保评论表单正确绑定
+    (function ensureFormBinding() {
+        console.log('🔧 确保评论表单绑定...');
+        
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const commentForm = document.getElementById('commentForm');
+                if (!commentForm) {
+                    console.error('❌ 找不到评论表单');
+                    return;
+                }
+                
+                const postId = new URLSearchParams(window.location.search).get('id');
+                if (!postId) {
+                    console.error('❌ 找不到文章ID');
+                    return;
+                }
+                
+                // 移除旧的绑定
+                commentForm.onsubmit = null;
+                
+                // 绑定新的提交事件
+                commentForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    console.log('📝 表单提交触发');
+                    
+                    if (window.CommentManager && typeof window.CommentManager.submitComment === 'function') {
+                        window.CommentManager.submitComment(e, postId);
+                    } else {
+                        console.error('❌ CommentManager.submitComment不可用');
+                        alert('评论功能暂不可用');
+                    }
+                };
+                
+                console.log('✅ 评论表单绑定完成');
+            }, 1000);
+        });
+    })();
+</script>
+</body>
+</html>

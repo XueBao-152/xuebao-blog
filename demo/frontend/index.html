@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学宝博客 - 知识分享平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 立即生效的基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            height: 60px;
+        }
+        
+        .nav-logo .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        
+        .nav-logo .logo i {
+            color: #3498db;
+        }
+        
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: #555;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: #3498db;
+            background: #f8f9fa;
+        }
+        
+        /* 🔥 新增：用户状态区域样式 */
+        .user-status-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* 用户菜单样式 */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        
+        .user-info:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .user-info i {
+            font-size: 12px;
+            color: #7f8c8d;
+            transition: transform 0.3s;
+        }
+        
+        .user-info:hover i {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            min-width: 180px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            margin-top: 5px;
+            animation: fadeInDown 0.2s ease-out;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: #2c3e50;
+            text-decoration: none;
+            font-size: 14px;
+            border-bottom: 1px solid #f8f9fa;
+            transition: all 0.2s;
+            gap: 8px;
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            color: #3498db;
+        }
+        
+        .dropdown-item i {
+            width: 16px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background: #f8f9fa;
+            margin: 5px 0;
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 登录/注册按钮容器 */
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .auth-buttons .btn {
+            font-size: 14px;
+            padding: 8px 16px;
+            transition: all 0.3s;
+        }
+        
+        .auth-buttons .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        /* 移动端菜单按钮 */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #555;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .mobile-menu-btn:hover {
+            background: #f8f9fa;
+        }
+        
+        /* 搜索框 */
+        .search-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+        
+        .btn-outline:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* 主要内容 */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            }
+            
+            .nav-menu.active {
+                display: flex;
+            }
+            
+            .user-menu {
+                width: 100%;
+            }
+            
+            .user-info {
+                justify-content: center;
+            }
+            
+            .dropdown-menu {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                border: 1px solid #e9ecef;
+                margin-top: 10px;
+            }
+        }
+        
+        /* 文章网格 */
+        .posts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .post-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .post-title {
+            margin: 0 0 10px 0;
+            font-size: 1.3rem;
+        }
+        
+        .post-title a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        
+        .post-title a:hover {
+            color: #3498db;
+        }
+        
+        .post-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .post-excerpt {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        /* 侧边栏 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* 加载状态 */
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        /* 错误状态 */
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #e74c3c;
+        }
+        
+        .error-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        /* 页脚 */
+        .footer {
+            background: #2c3e50;
+            color: #fff;
+            padding: 40px 0 20px;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 15px;
+            color: white;
+        }
+        
+        .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .footer-section a:hover {
+            color: #3498db;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .social-links a:hover {
+            background: #3498db;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+        
+        /* 分页 */
+        .pagination-nav {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .pagination {
+            list-style: none;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .page-item {
+            display: inline-block;
+        }
+        
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #3498db;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        
+        .page-item.active .page-link {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .page-link:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-book-open"></i> 学宝博客
+                </a>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-home"></i> 首页
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-th"></i> 分类
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-tags"></i> 标签
+                </a>
+                <a href="about.html" class="nav-link">
+                    <i class="fas fa-info-circle"></i> 关于
+                </a>
+                
+                <!-- 🔥 修改：用户状态显示区域 -->
+                <div class="user-status-area">
+                    <!-- 未登录状态 - 登录/注册按钮 -->
+                    <div id="guestView" class="auth-buttons">
+                        <a href="login.html" class="btn btn-outline">登录</a>
+                        <a href="register.html" class="btn btn-primary">注册</a>
+                    </div>
+                    
+                    <!-- 已登录状态 - 用户菜单 -->
+                    <div id="loggedInView" class="user-menu" style="display: none;">
+                        <div class="user-info" onclick="UserManager.toggleUserMenu()">
+                            <div class="user-avatar" id="userAvatar">👤</div>
+                            <span class="user-name" id="userName">用户</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu" id="userDropdownMenu">
+                            <a href="profile.html" class="dropdown-item">
+                                <i class="fas fa-user-circle"></i> 个人中心
+                            </a>
+                            <a href="my-posts.html" class="dropdown-item">
+                                <i class="fas fa-file-alt"></i> 我的文章
+                            </a>
+                            <a href="create-post.html" class="dropdown-item">
+                                <i class="fas fa-edit"></i> 写文章
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="javascript:void(0)" class="dropdown-item" onclick="UserManager.switchUser()">
+                                <i class="fas fa-exchange-alt"></i> 切换用户
+                            </a>
+                            <a href="javascript:void(0)" class="dropdown-item" onclick="UserManager.logout()">
+                                <i class="fas fa-sign-out-alt"></i> 退出登录
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 移动端菜单按钮 -->
+            <button class="mobile-menu-btn" onclick="UserManager.toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 搜索框 -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索文章..." class="search-input">
+                <button class="btn btn-primary" id="searchButton" onclick="App.searchPosts()">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="content-layout">
+            <!-- 左侧：文章列表 -->
+            <div class="main-content">
+                <div class="page-header">
+                    <h1>最新文章</h1>
+                    <div class="filter-buttons">
+                        <button class="btn btn-outline active" onclick="App.goToPage(0)">全部</button>
+                        <button class="btn btn-outline" onclick="App.goToPage(0, 'popular')">热门</button>
+                        <button class="btn btn-outline" onclick="App.goToPage(0, 'latest')">最新</button>
+                    </div>
+                </div>
+
+                <div class="posts-container" id="postsContainer">
+                    <!-- 文章列表动态加载 -->
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="pagination">
+                    <!-- 分页按钮动态生成 -->
+                </div>
+            </div>
+
+            <!-- 右侧：侧边栏 -->
+            <aside class="sidebar">
+                <!-- 🔥 修改：用户状态卡片 -->
+                <div id="userCard" class="card auth-card" style="display: none;">
+                    <h3 id="userCardTitle">个人中心</h3>
+                    <p id="userCardWelcome">欢迎回来！</p>
+                    <a href="create-post.html" class="btn btn-primary btn-block">写文章</a>
+                    <a href="my-posts.html" class="btn btn-outline btn-block">我的文章</a>
+                    <a href="javascript:void(0)" class="btn btn-link btn-block" onclick="UserManager.switchUser()" id="userCardSwitch">切换用户</a>
+                </div>
+                
+                <!-- 登录/注册卡片（未登录状态） -->
+                <div id="authCard" class="card auth-card">
+                    <h3>加入学宝博客</h3>
+                    <p>分享知识，共同成长</p>
+                    <a href="login.html" class="btn btn-primary btn-block">登录</a>
+                    <a href="register.html" class="btn btn-outline btn-block">注册</a>
+                </div>
+
+                <!-- 分类 -->
+                <div class="card categories">
+                    <h3>文章分类</h3>
+                    <ul class="category-list" id="categoryList">
+                        <li><a href="#">前端开发</a></li>
+                        <li><a href="#">后端开发</a></li>
+                        <li><a href="#">移动开发</a></li>
+                        <li><a href="#">人工智能</a></li>
+                        <li><a href="#">数据库</a></li>
+                    </ul>
+                </div>
+
+                <!-- 热门标签 -->
+                <div class="card tags">
+                    <h3>热门标签</h3>
+                    <div class="tag-list" id="tagList">
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Python</span>
+                        <span class="tag">Java</span>
+                        <span class="tag">React</span>
+                        <span class="tag">Vue</span>
+                        <span class="tag">Node.js</span>
+                        <span class="tag">Spring</span>
+                        <span class="tag">MySQL</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>学宝博客</h4>
+                    <p>分享知识，共同成长的技术社区</p>
+                </div>
+                <div class="footer-section">
+                    <h4>链接</h4>
+                    <a href="index.html">首页</a>
+                    <a href="about.html">关于我们</a>
+                    <a href="contact.html">联系我们</a>
+                </div>
+                <div class="footer-section">
+                    <h4>关注我们</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-weibo"></i></a>
+                        <a href="#"><i class="fab fa-weixin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <p class="copyright">© 2023 学宝博客. 保留所有权利.</p>
+        </div>
+    </footer>
+
+    <!-- 必须按正确顺序加载 -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script><!-- 🔥 新增：用户状态管理 -->
+    <script>
+        // 用户状态管理器
+        class UserManager {
+            // 初始化用户状态
+            static init() {
+                console.log('👤 UserManager 初始化...');
+                this.updateUserStatus();
+                this.bindEvents();
+            }
+            
+            // 更新用户状态显示
+            static updateUserStatus() {
+                console.log('🔄 更新用户状态显示...');
+                
+                const token = localStorage.getItem('xuebao_token');
+                const userStr = localStorage.getItem('xuebao_user');
+                
+                console.log('本地存储检查:');
+                console.log('- token:', token ? '✅ 存在' : '❌ 不存在');
+                console.log('- userStr:', userStr ? '✅ 存在' : '❌ 不存在');
+                
+                if (token && userStr) {
+                    try {
+                        const user = JSON.parse(userStr);
+                        const username = user.username || user.email || '用户';
+                        const firstLetter = username.charAt(0).toUpperCase();
+                        
+                        console.log('✅ 用户已登录:', username);
+                        
+                        // 更新导航栏
+                        const guestView = document.getElementById('guestView');
+                        const loggedInView = document.getElementById('loggedInView');
+                        
+                        if (guestView && loggedInView) {
+                            guestView.style.display = 'none';
+                            loggedInView.style.display = 'block';
+                            console.log('✅ 导航栏已更新');
+                        }
+                        
+                        // 更新用户信息
+                        const userAvatar = document.getElementById('userAvatar');
+                        const userName = document.getElementById('userName');
+                        
+                        if (userAvatar) {
+                            userAvatar.textContent = firstLetter;
+                            console.log('✅ 用户头像已更新:', firstLetter);
+                        }
+                        if (userName) {
+                            userName.textContent = username;
+                            console.log('✅ 用户名已更新:', username);
+                        }
+                        
+                        // 更新侧边栏卡片
+                        const userCard = document.getElementById('userCard');
+                        const authCard = document.getElementById('authCard');
+                        
+                        if (userCard) {
+                            const title = document.getElementById('userCardTitle');
+                            const welcome = document.getElementById('userCardWelcome');
+                            
+                            if (title) title.textContent = username;
+                            if (welcome) welcome.textContent = '欢迎回来！';
+                            userCard.style.display = 'block';
+                            console.log('✅ 用户卡片已显示');
+                        }
+                        
+                        if (authCard) {
+                            authCard.style.display = 'none';
+                            console.log('✅ 登录卡片已隐藏');
+                        }
+                        
+                        console.log('✅ 用户状态更新完成');
+                        
+                    } catch (error) {
+                        console.error('❌ 解析用户信息失败:', error);
+                        this.showGuestState();
+                    }
+                } else {
+                    console.log('👤 用户未登录');
+                    this.showGuestState();
+                }
+            }
+            
+            // 显示访客状态
+            static showGuestState() {
+                console.log('📱 显示访客状态');
+                
+                const guestView = document.getElementById('guestView');
+                const loggedInView = document.getElementById('loggedInView');
+                const userCard = document.getElementById('userCard');
+                const authCard = document.getElementById('authCard');
+                
+                if (guestView && loggedInView) {
+                    guestView.style.display = 'flex';
+                    loggedInView.style.display = 'none';
+                    console.log('✅ 导航栏显示访客状态');
+                }
+                
+                if (userCard) {
+                    userCard.style.display = 'none';
+                    console.log('✅ 用户卡片已隐藏');
+                }
+                
+                if (authCard) {
+                    authCard.style.display = 'block';
+                    console.log('✅ 登录卡片已显示');
+                }
+            }
+            
+            // 切换用户菜单
+            static toggleUserMenu() {
+                console.log('📋 切换用户菜单');
+                const dropdown = document.getElementById('userDropdownMenu');
+                if (dropdown) {
+                    dropdown.classList.toggle('show');
+                    
+                    // 点击其他地方关闭
+                    document.addEventListener('click', function closeMenu(e) {
+                        if (!e.target.closest('.user-menu')) {
+                            dropdown.classList.remove('show');
+                            document.removeEventListener('click', closeMenu);
+                        }
+                    });
+                }
+            }
+            
+            // 切换用户
+            static switchUser() {
+                console.log('🔄 切换用户');
+                
+                if (confirm('确定要切换用户吗？当前用户将退出登录。')) {
+                    localStorage.removeItem('xuebao_token');
+                    localStorage.removeItem('xuebao_user');
+                    
+                    if (window.Utils && typeof Utils.showMessage === 'function') {
+                        Utils.showMessage('正在跳转到登录页面...', 'info');
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1000);
+                }
+            }
+            
+            // 退出登录
+            static logout() {
+                console.log('🚪 退出登录');
+                if (confirm('确定要退出登录吗？')) {
+                    localStorage.removeItem('xuebao_token');
+                    localStorage.removeItem('xuebao_user');
+                    
+                    if (window.Utils && typeof Utils.showMessage === 'function') {
+                        Utils.showMessage('已退出登录', 'success');
+                    }
+                    
+                    // 刷新页面
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
+            }
+            
+            // 绑定事件
+            static bindEvents() {
+                console.log('🔗 绑定用户事件...');
+                
+                // 搜索功能
+                const searchInput = document.getElementById('searchInput');
+                const searchButton = document.getElementById('searchButton');
+                
+                if (searchInput) {
+                    searchInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            if (window.App && typeof App.searchPosts === 'function') {
+                                App.searchPosts();
+                            }
+                        }
+                    });
+                }
+                
+                if (searchButton) {
+                    searchButton.addEventListener('click', () => {
+                        if (window.App && typeof App.searchPosts === 'function') {
+                            App.searchPosts();
+                        }
+                    });
+                }
+                
+                // 移动端菜单
+                const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+                if (mobileMenuBtn) {
+                    mobileMenuBtn.addEventListener('click', this.toggleMobileMenu);
+                }
+                
+                console.log('✅ 用户事件绑定完成');
+            }
+            
+            // 切换移动端菜单
+            static toggleMobileMenu() {
+                console.log('📱 切换移动端菜单');
+                const navMenu = document.querySelector('.nav-menu');
+                if (navMenu) {
+                    navMenu.classList.toggle('active');
+                }
+            }
+            
+            // 检查登录状态
+            static checkLoginStatus() {
+                const token = localStorage.getItem('xuebao_token');
+                const userStr = localStorage.getItem('xuebao_user');
+                
+                console.log('🔍 检查登录状态:');
+                console.log('- Token存在:', !!token);
+                console.log('- 用户信息存在:', !!userStr);
+                
+                if (token && userStr) {
+                    try {
+                        const user = JSON.parse(userStr);
+                        return {
+                            isLoggedIn: true,
+                            user: user,
+                            username: user.username || user.email || '用户'
+                        };
+                    } catch (error) {
+                        console.error('解析用户信息失败:', error);
+                        return { isLoggedIn: false };
+                    }
+                }
+                return { isLoggedIn: false };
+            }
+        }
+        
+        // 全局导出
+        window.UserManager = UserManager;
+        
+        // 🔥 关键修复：页面加载完成后立即初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎉 页面加载完成，初始化用户状态...');
+            
+            // 🔥 第一步：立即检查登录状态
+            console.log('🔍 立即检查登录状态...');
+            const token = localStorage.getItem('xuebao_token');
+            const userStr = localStorage.getItem('xuebao_user');
+            
+            console.log('本地存储信息:');
+            console.log('xuebao_token:', token ? '✅ 存在' : '❌ 不存在');
+            console.log('xuebao_user:', userStr ? '✅ 存在' : '❌ 不存在');
+            
+            if (token && userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    console.log('✅ 用户已登录:', user);
+                    console.log('用户名:', user.username || user.email || '用户');
+                    
+                    // 🔥 立即更新用户界面
+                    console.log('🚀 立即更新用户界面...');
+                    updateUserStatusImmediately();
+                    
+                } catch (error) {
+                    console.error('❌ 解析用户信息失败:', error);
+                }
+            } else {
+                console.log('👤 用户未登录');
+            }
+            
+            // 第二步：初始化用户管理器
+            if (window.UserManager && typeof UserManager.init === 'function') {
+                UserManager.init();
+            } else {
+                console.error('❌ UserManager.init 不存在');
+            }
+            
+            // 第三步：绑定搜索事件
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        if (window.App && typeof App.searchPosts === 'function') {
+                            App.searchPosts();
+                        }
+                    }
+                });
+            }
+            
+            // 第四步：自动加载文章
+            setTimeout(() => {
+                const postsContainer = document.getElementById('postsContainer');
+                if (postsContainer && postsContainer.innerHTML.trim() === '') {
+                    console.log('检测到文章容器为空，尝试加载...');
+                    if (window.App && window.App.loadPosts) {
+                        window.App.loadPosts();
+                    }
+                }
+            }, 2000);
+        });
+        
+        // 🔥 新增：立即更新用户状态的函数
+        function updateUserStatusImmediately() {
+            console.log('🚀 立即更新用户状态...');
+            
+            const token = localStorage.getItem('xuebao_token');
+            const userStr = localStorage.getItem('xuebao_user');
+            
+            if (token && userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    const username = user.username || user.email || '用户';
+                    const firstLetter = username.charAt(0).toUpperCase();
+                    
+                    console.log(`✅ 用户已登录: ${username}`);
+                    
+                    // 查找相关元素
+                    const guestView = document.getElementById('guestView');
+                    const loggedInView = document.getElementById('loggedInView');
+                    const userAvatar = document.getElementById('userAvatar');
+                    const userName = document.getElementById('userName');
+                    const userCard = document.getElementById('userCard');
+                    const authCard = document.getElementById('authCard');
+                    
+                    console.log('找到的DOM元素:');
+                    console.log('- guestView:', !!guestView);
+                    console.log('- loggedInView:', !!loggedInView);
+                    console.log('- userAvatar:', !!userAvatar);
+                    console.log('- userName:', !!userName);
+                    console.log('- userCard:', !!userCard);
+                    console.log('- authCard:', !!authCard);
+                    
+                    // 更新导航栏
+                    if (guestView) {
+                        guestView.style.display = 'none';
+                        console.log('✅ 隐藏访客视图');
+                    }
+                    if (loggedInView) {
+                        loggedInView.style.display = 'block';
+                        console.log('✅ 显示登录视图');
+                    }
+                    if (userAvatar) {
+                        userAvatar.textContent = firstLetter;
+                        console.log('✅ 更新用户头像:', firstLetter);
+                    }
+                    if (userName) {
+                        userName.textContent = username;
+                        console.log('✅ 更新用户名:', username);
+                    }
+                    
+                    // 更新侧边栏卡片
+                    if (userCard) {
+                        const title = userCard.querySelector('h3') || document.getElementById('userCardTitle');
+                        const welcome = userCard.querySelector('p') || document.getElementById('userCardWelcome');
+                        
+                        if (title) {
+                            title.textContent = username;
+                            console.log('✅ 更新用户卡片标题:', username);
+                        }
+                        if (welcome) {
+                            welcome.textContent = '欢迎回来！';
+                            console.log('✅ 更新欢迎信息');
+                        }
+                        userCard.style.display = 'block';
+                        console.log('✅ 显示用户卡片');
+                    }
+                    
+                    if (authCard) {
+                        authCard.style.display = 'none';
+                        console.log('✅ 隐藏登录卡片');
+                    }
+                    
+                    console.log('✅ 用户界面已更新');
+                    
+                } catch (error) {
+                    console.error('❌ 更新用户界面失败:', error);
+                }
+            } else {
+                console.log('👤 用户未登录，显示访客状态');
+                
+                const guestView = document.getElementById('guestView');
+                const loggedInView = document.getElementById('loggedInView');
+                const userCard = document.getElementById('userCard');
+                const authCard = document.getElementById('authCard');
+                
+                if (guestView) guestView.style.display = 'flex';
+                if (loggedInView) loggedInView.style.display = 'none';
+                if (userCard) userCard.style.display = 'none';
+                if (authCard) authCard.style.display = 'block';
+                
+                console.log('✅ 访客状态已设置');
+            }
+        }
+        
+        // 全局刷新页面函数
+        window.refreshPage = function() {
+            location.reload();
+        };
+        
+        // 全局加载函数
+        window.loadArticles = function() {
+            if (window.App && window.App.loadPosts) {
+                window.App.loadPosts();
+            } else {
+                console.error('App.loadPosts 不存在');
+                alert('加载失败，请刷新页面');
+            }
+        };
+        
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const navMenu = document.querySelector('.nav-menu');
+            if (navMenu) navMenu.classList.toggle('active');
+        }
+        
+        // 页面完全加载完成
+        window.addEventListener('load', function() {
+            console.log('✅ 页面完全加载完成');
+            console.log('全局对象检查:');
+            console.log('- window.API:', window.API ? '✅ 存在' : '❌ 不存在');
+            console.log('- window.API.getPosts:', typeof window.API?.getPosts);
+            console.log('- window.App:', window.App ? '✅ 存在' : '❌ 不存在');
+            console.log('- window.App.loadPosts:', typeof window.App?.loadPosts);
+            console.log('- window.UserManager:', window.UserManager ? '✅ 存在' : '❌ 不存在');
+            
+            // 最终检查用户状态
+            if (window.UserManager && typeof UserManager.checkLoginStatus === 'function') {
+                const loginStatus = UserManager.checkLoginStatus();
+                console.log('最终登录状态:', loginStatus);
+            }
+            
+            // 最终检查用户界面状态
+            console.log('用户界面元素检查:');
+            console.log('- guestView显示:', document.getElementById('guestView')?.style.display);
+            console.log('- loggedInView显示:', document.getElementById('loggedInView')?.style.display);
+            console.log('- userCard显示:', document.getElementById('userCard')?.style.display);
+            console.log('- authCard显示:', document.getElementById('authCard')?.style.display);
+            
+            // 🔥 最终强制更新：如果没有正确显示，手动强制更新一次
+            const token = localStorage.getItem('xuebao_token');
+            const userStr = localStorage.getItem('xuebao_user');
+            if (token && userStr) {
+                console.log('有登录信息，再次手动更新用户界面...');
+                
+                try {
+                    const user = JSON.parse(userStr);
+                    const username = user.username || user.email || '用户';
+                    const firstLetter = username.charAt(0).toUpperCase();
+                    
+                    const guestView = document.getElementById('guestView');
+                    const loggedInView = document.getElementById('loggedInView');
+                    const userAvatar = document.getElementById('userAvatar');
+                    const userName = document.getElementById('userName');
+                    const userCard = document.getElementById('userCard');
+                    const authCard = document.getElementById('authCard');
+                    
+                    if (guestView) guestView.style.display = 'none';
+                    if (loggedInView) loggedInView.style.display = 'block';
+                    if (userAvatar) userAvatar.textContent = firstLetter;
+                    if (userName) userName.textContent = username;
+                    if (userCard) {
+                        const title = document.getElementById('userCardTitle');
+                        const welcome = document.getElementById('userCardWelcome');
+                        if (title) title.textContent = username;
+                        if (welcome) welcome.textContent = '欢迎回来！';
+                        userCard.style.display = 'block';
+                    }
+                    if (authCard) authCard.style.display = 'none';
+                    
+                    console.log('✅ 最终手动更新完成，应显示用户信息');
+                } catch (error) {
+                    console.error('最终手动更新失败:', error);
+                }
+            }
+        });
+        
+        console.log('✅ index.html JavaScript加载完成');
+    </script>
+</body>
+</html>

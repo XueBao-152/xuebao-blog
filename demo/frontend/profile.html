@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 学宝博客</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: white;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #667eea;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .profile-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .profile-role {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .profile-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+        
+        .profile-sidebar {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .profile-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .profile-menu li {
+            margin-bottom: 5px;
+        }
+        
+        .profile-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .profile-menu a:hover {
+            background: #f8f9fa;
+            color: #007bff;
+        }
+        
+        .profile-menu a.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .profile-menu a i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .profile-main {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        .profile-section {
+            margin-bottom: 40px;
+        }
+        
+        .profile-section h2 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .info-group {
+            margin-bottom: 20px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .edit-profile-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .edit-profile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-stats {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-book-open"></i> 学宝博客
+                </a>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> 首页
+                </a>
+                <a href="categories.html" class="nav-link">
+                    <i class="fas fa-th"></i> 分类
+                </a>
+                <a href="tags.html" class="nav-link">
+                    <i class="fas fa-tags"></i> 标签
+                </a>
+                <a href="about.html" class="nav-link">
+                    <i class="fas fa-info-circle"></i> 关于
+                </a>
+                
+                <!-- 用户状态 -->
+                <div id="userStatus" class="user-status">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 个人中心内容 -->
+    <div class="profile-container">
+        <div id="profileHeader" class="profile-header">
+            <div class="profile-avatar" id="userAvatar">
+                <!-- 头像动态生成 -->
+            </div>
+            <div class="profile-name" id="userName">加载中...</div>
+            <div class="profile-role" id="userRole">用户</div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="postCount">0</div>
+                    <div class="stat-label">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="followerCount">0</div>
+                    <div class="stat-label">粉丝</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="followingCount">0</div>
+                    <div class="stat-label">关注</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="likeCount">0</div>
+                    <div class="stat-label">获赞</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-content">
+            <div class="profile-sidebar">
+                <ul class="profile-menu">
+                    <li><a href="#info" class="active" onclick="showSection('info')">
+                        <i class="fas fa-user"></i> 个人信息
+                    </a></li>
+                    <li><a href="#posts" onclick="showSection('posts')">
+                        <i class="fas fa-file-alt"></i> 我的文章
+                    </a></li>
+                    <li><a href="#drafts" onclick="showSection('drafts')">
+                        <i class="fas fa-edit"></i> 草稿箱
+                    </a></li>
+                    <li><a href="#comments" onclick="showSection('comments')">
+                        <i class="fas fa-comment"></i> 我的评论
+                    </a></li>
+                    <li><a href="#likes" onclick="showSection('likes')">
+                        <i class="fas fa-heart"></i> 我的点赞
+                    </a></li>
+                    <li><a href="#settings" onclick="showSection('settings')">
+                        <i class="fas fa-cog"></i> 账户设置
+                    </a></li>
+                </ul>
+                
+                <button class="edit-profile-btn" style="width: 100%; margin-top: 20px;">
+                    <i class="fas fa-edit"></i> 编辑资料
+                </button>
+            </div>
+            
+            <div class="profile-main">
+                <div id="infoSection" class="profile-section">
+                    <h2>个人信息</h2>
+                    <div class="info-group">
+                        <div class="info-label">用户名</div>
+                        <div class="info-value" id="profileUsername">-</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">昵称</div>
+                        <div class="info-value" id="profileNickname">-</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">邮箱</div>
+                        <div class="info-value" id="profileEmail">-</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">注册时间</div>
+                        <div class="info-value" id="profileJoinDate">-</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">个人简介</div>
+                        <div class="info-value" id="profileBio">暂无个人简介</div>
+                    </div>
+                </div>
+                
+                <div id="postsSection" class="profile-section" style="display: none;">
+                    <h2>我的文章</h2>
+                    <div id="myPostsList">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入脚本 -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/user.js"></script>
+    
+    <script>
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('个人中心页面加载');
+            
+            // 检查登录状态
+            if (!Auth.protectPage()) {
+                return;
+            }
+            
+            // 渲染用户状态
+            if (window.UserManager && typeof window.UserManager.renderUserStatus === 'function') {
+                window.UserManager.renderUserStatus();
+            } else {
+                updateAuthButtons();
+            }
+            
+            // 加载用户信息
+            loadUserProfile();
+            
+            // 加载用户统计
+            loadUserStats();
+            
+            // 加载用户文章
+            loadUserPosts();
+        });
+        
+        // 加载用户信息
+        async function loadUserProfile() {
+            try {
+                const user = UserManager.getCurrentUser();
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // 显示用户信息
+                document.getElementById('userName').textContent = UserManager.getUserName(user);
+                document.getElementById('userRole').textContent = UserManager.getUserRole(user);
+                document.getElementById('profileUsername').textContent = user.username || '-';
+                document.getElementById('profileNickname').textContent = user.nickname || user.username || '-';
+                document.getElementById('profileEmail').textContent = user.email || '-';
+                document.getElementById('profileBio').textContent = user.bio || '暂无个人简介';
+                
+                // 格式化注册时间
+                if (user.createdAt) {
+                    const joinDate = new Date(user.createdAt).toLocaleDateString('zh-CN');
+                    document.getElementById('profileJoinDate').textContent = joinDate;
+                }
+                
+                // 设置头像
+                const avatar = UserManager.getUserAvatar(user);
+                const avatarElement = document.getElementById('userAvatar');
+                if (avatar) {
+                    avatarElement.innerHTML = `<img src="${avatar}" alt="${user.username}">`;
+                } else {
+                    const firstChar = (user.username || '用户').charAt(0).toUpperCase();
+                    avatarElement.innerHTML = `<span>${firstChar}</span>`;
+                }
+                
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+                Utils.showMessage('加载用户信息失败', 'error');
+            }
+        }
+        
+        // 加载用户统计
+        async function loadUserStats() {
+            // 这里从API获取用户统计数据
+            // 暂时用模拟数据
+            setTimeout(() => {
+                document.getElementById('postCount').textContent = '12';
+                document.getElementById('followerCount').textContent = '156';
+                document.getElementById('followingCount').textContent = '42';
+                document.getElementById('likeCount').textContent = '1.2K';
+            }, 500);
+        }
+        
+        // 加载用户文章
+        async function loadUserPosts() {
+            try {
+                const posts = await API.getMyPosts();
+                if (posts && posts.content && posts.content.length > 0) {
+                    const postsHTML = posts.content.map(post => `
+                        <div class="post-card" style="margin-bottom: 20px; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px;">
+                            <h4><a href="post.html?id=${post.id}">${post.title}</a></h4>
+                            <p>${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}</p>
+                            <div style="font-size: 12px; color: #6c757d;">
+                                <span>${Utils.formatDate(post.createdAt)}</span>
+                                <span style="margin-left: 20px;">👁️ ${post.viewCount || 0} 浏览</span>
+                                <span style="margin-left: 20px;">❤️ ${post.likeCount || 0} 点赞</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('myPostsList').innerHTML = postsHTML;
+                } else {
+                    document.getElementById('myPostsList').innerHTML = '<p>暂无文章，<a href="create-post.html">立即发布</a></p>';
+                }
+            } catch (error) {
+                console.error('加载用户文章失败:', error);
+                document.getElementById('myPostsList').innerHTML = '<p>加载失败，请刷新重试</p>';
+            }
+        }
+        
+        // 显示不同部分
+        function showSection(sectionId) {
+            // 隐藏所有部分
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // 显示选中的部分
+            document.getElementById(sectionId + 'Section').style.display = 'block';
+            
+            // 更新菜单激活状态
+            document.querySelectorAll('.profile-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`.profile-menu a[href="#${sectionId}"]`).classList.add('active');
+        }
+        
+        // 编辑资料
+        document.querySelector('.edit-profile-btn').addEventListener('click', function() {
+            Utils.showMessage('编辑资料功能开发中...', 'info');
+        });
+        
+        // 备用函数
+        function updateAuthButtons() {
+            const token = localStorage.getItem('xuebao_token');
+            const userStatus = document.getElementById('userStatus');
+            
+            if (token && userStatus) {
+                const userData = localStorage.getItem('xuebao_user');
+                let user = null;
+                try {
+                    user = userData ? JSON.parse(userData) : null;
+                } catch (e) {}
+                
+                const username = user?.username || '用户';
+                const firstLetter = username.charAt(0).toUpperCase();
+                
+                userStatus.innerHTML = `
+                    <div class="user-menu">
+                        <div class="user-info" onclick="window.location.href='profile.html'" 
+                             style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); 
+                                    display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                ${firstLetter}
+                            </div>
+                            <span style="font-weight: 500;">${username}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
